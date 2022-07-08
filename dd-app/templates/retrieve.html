@@ -1,0 +1,61 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>CryptoJS Example</title>
+    <meta name="description" content="CryptoJs Example">
+    <meta name="author" content="David Ulicny">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="
+    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/aes.min.js"></script>
+
+    <script>
+        function pwd() {
+            let passwd = document.getElementById("password").value
+            console.log(passwd)
+            load_data(passwd)
+        }
+
+        function decrypt(payload, key) {
+            console.log(payload.trim())
+            console.log(key.trim())
+            let message = CryptoJS.AES.decrypt(payload.trim(), key.trim())
+            console.log(message.toString(CryptoJS.enc.Utf8))
+            document.getElementById("message").innerText = message.toString(CryptoJS.enc.Utf8)
+        }
+
+        function load_data(password) {
+            fetch('/drop/retrieve/{{ path_id }}', {
+                    method: 'GET'
+                }
+            )
+                .then(response => {
+                    return response.json()
+                })
+                .then(data => {
+                    console.log(data)
+                    decrypt(data['data'], password)
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
+        }
+    </script>
+</head>
+
+<body>
+<section>
+    <div>
+        <label>Password:</label>
+        <input type="text" id="password">
+        <input type="button" value="Decrypt" onclick="pwd()">
+    </div>
+    <div id="message">
+
+    </div>
+</section>
+</body>
+
+</html>

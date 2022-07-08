@@ -1,0 +1,90 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>CryptoJS Example</title>
+    <meta name="description" content="CryptoJs Example">
+    <meta name="author" content="David Ulicny">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="
+    https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/aes.min.js"></script>
+
+    <script>
+        function encrypt_message() {
+            console.log(document.getElementById("message").value)
+            const bytes = CryptoJS.AES.encrypt(document.getElementById("message").value, document.getElementById("password").value);
+            //const bytes = CryptoJS.AES.encrypt('U2FsdGVkX1/b8eyP9UC2sfledui5CK+BWPeTzqycptA=', 'ZJLWsRZc')//document.getElementById("password").innerHTML);
+            console.log(bytes.toString())
+            let b = {}
+            b['data'] = bytes.toString()
+            send_data(b)
+            console.log(CryptoJS.AES.decrypt('U2FsdGVkX1/b8eyP9UC2sfledui5CK+BWPeTzqycptA=', 'ZJLWsRZc').toString(CryptoJS.enc.Utf8))
+        }
+
+        function random_password(){
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+            var nums = "0123456789";
+            var specials = "$#!@*&^_=";
+            const array = new Uint32Array(8)
+            window.crypto.getRandomValues(array)
+            let pwd = Array.from(array).map(x => chars[x % chars.length]).join('')
+            return pwd
+        }
+
+        function check_password(){
+            let checked = document.getElementById("checkpassword").checked
+            if(checked){
+                let pwd = document.getElementById("password")
+                pwd.value = random_password()
+            }else{
+                document.getElementById("password").removeAttribute('disabled')
+            }
+        }
+
+        function send_data(payload){
+            fetch('/drop/dropme', {
+                method: 'POST',
+                headers:{
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    document.getElementById('result').innerHTML = window.location.protocol + '//' +
+                        window.location.host + '/get/' + data['path']
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
+        }
+    </script>
+</head>
+<body>
+
+<section class="content">
+    <div>
+        <p><label>Message:</label></p>
+        <textarea id="message" rows="4" cols="50"></textarea>
+    </div>
+
+    <div>
+        <label>Password:</label>
+        <input id="password" type="text">
+    </div>
+
+    <div>
+        <label>Generate Password:</label>
+        <input id="checkpassword" type="checkbox" onclick="check_password()">
+    </div>
+</section>
+<section>
+    <div id="result">
+
+    </div>
+</section>
+<input type="button" value="Send" onclick="encrypt_message()">
+</body>
