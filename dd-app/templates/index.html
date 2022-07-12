@@ -6,6 +6,8 @@
     <title>CryptoJS Example</title>
     <meta name="description" content="CryptoJs Example">
     <meta name="author" content="David Ulicny">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="
@@ -13,17 +15,17 @@
 
     <script>
         function encrypt_message() {
-            console.log(document.getElementById("message").value)
+            if (document.getElementById("message").value === ''){
+                alert('Empty message');
+                return;
+            }
             const bytes = CryptoJS.AES.encrypt(document.getElementById("message").value, document.getElementById("password").value);
-            //const bytes = CryptoJS.AES.encrypt('U2FsdGVkX1/b8eyP9UC2sfledui5CK+BWPeTzqycptA=', 'ZJLWsRZc')//document.getElementById("password").innerHTML);
-            console.log(bytes.toString())
             let b = {}
             b['data'] = bytes.toString()
             send_data(b)
-            console.log(CryptoJS.AES.decrypt('U2FsdGVkX1/b8eyP9UC2sfledui5CK+BWPeTzqycptA=', 'ZJLWsRZc').toString(CryptoJS.enc.Utf8))
         }
 
-        function random_password(){
+        function random_password() {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
             var nums = "0123456789";
             var specials = "$#!@*&^_=";
@@ -33,20 +35,15 @@
             return pwd
         }
 
-        function check_password(){
-            let checked = document.getElementById("checkpassword").checked
-            if(checked){
-                let pwd = document.getElementById("password")
-                pwd.value = random_password()
-            }else{
-                document.getElementById("password").removeAttribute('disabled')
-            }
+        function check_password() {
+            let pwd = document.getElementById("password")
+            pwd.value = random_password()
         }
 
-        function send_data(payload){
+        function send_data(payload) {
             fetch('/drop/dropme', {
                 method: 'POST',
-                headers:{
+                headers: {
                     'Content-type': 'application/json'
                 },
                 body: JSON.stringify(payload)
@@ -56,6 +53,8 @@
                     console.log(data)
                     document.getElementById('result').innerHTML = window.location.protocol + '//' +
                         window.location.host + '/get/' + data['path']
+                    document.getElementById('message').value = ''
+                    document.getElementById('password').value = ''
                 })
                 .catch((error) => {
                     console.log(error)
@@ -65,26 +64,44 @@
 </head>
 <body>
 
-<section class="content">
-    <div>
-        <p><label>Message:</label></p>
-        <textarea id="message" rows="4" cols="50"></textarea>
+<div class="container px-4">
+    <div class="row align-items-start">
+        <div class="col">
+            <div class="p-3">
+                <label for="message">Message</label>
+                <textarea id="message" class="form-control p-2" rows="5"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="p-3">
+                <label for="password">Password</label>
+                <input type="text" id="password" class="form-control">
+            </div>
+        </div>
+    </div>
+    <div class="row gx-5">
+        <div class="col">
+            <div class="p-3">
+                <input type="button" class="btn btn-primary" value="Generate Password" onclick="check_password()">
+            </div>
+        </div>
+    </div>
+    <div class="row gx-5">
+        <div class="col">
+            <div class="p-3">
+                <input type="button" class="btn btn-secondary" value="Send" onclick="encrypt_message()">
+            </div>
+        </div>
     </div>
 
-    <div>
-        <label>Password:</label>
-        <input id="password" type="text">
+    <div class="row">
+        <div class="col">
+            <p id="result"></p>
+        </div>
     </div>
+</div>
 
-    <div>
-        <label>Generate Password:</label>
-        <input id="checkpassword" type="checkbox" onclick="check_password()">
-    </div>
-</section>
-<section>
-    <div id="result">
 
-    </div>
-</section>
-<input type="button" value="Send" onclick="encrypt_message()">
 </body>
